@@ -1,0 +1,3 @@
+ This palm tree is infected with Brown Spots . 
+ This palm tree is infected with White Scale .
+ This palm tree is free of diseases .
