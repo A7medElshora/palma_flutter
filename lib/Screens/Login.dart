@@ -22,6 +22,21 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+       appBar: AppBar(
+       
+        actions: [
+          IconButton(
+            icon: Icon(Icons.language),
+            onPressed: () {
+              Locale newLocale = Localizations.localeOf(context).languageCode == 'en'
+                  ? Locale('ar')
+                  : Locale('en');
+              onLocaleChange(newLocale);
+            },
+          ),
+        ],
+      ),
+
       body: Stack(
         children: [
           // Background Image or Content
@@ -57,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          "Login",
+                          AppLocalizations.of(context).translate('Login')
                           style: TextStyle(
                             color: Color(0xff3C6255),
                             fontSize: 32,

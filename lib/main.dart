@@ -21,11 +21,22 @@ class MyApp extends StatelessWidget {
             theme: notifier.getLightTheme(),
             darkTheme: notifier.getDarkTheme(),
             themeMode: notifier.themeMode,
+            locale: _locale,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en', ''),
+        const Locale('ar', ''),
+      ],
             initialRoute: '/',
             routes: {
               '/': (context) => SplashScreen(), // Define the splash screen route
               '/home': (context) => StartPage(), // Define your home screen route
-              // Add more routes as needed
+              
             },
           );
         },
