@@ -74,8 +74,7 @@ class _PasswordChangedState extends State<PasswordChanged>
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
-                  ),
-                  primary: Color(0xff3C6255),
+                  ), backgroundColor: Color(0xff3C6255),
                 ),
                 onPressed: () {
                   Navigator.of(context).pushReplacement(

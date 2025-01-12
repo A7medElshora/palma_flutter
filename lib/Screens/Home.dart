@@ -1,20 +1,44 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:carousel_slider/carousel_controller.dart';
 import 'package:dots_indicator/dots_indicator.dart';
-import 'package:p_p/main.dart';
+import 'package:p_p/Screens/create_post.dart';
+import 'package:p_p/localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
+  const Home({super.key});
+
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
   int _currentIndex = 0;
-  final CarouselController _controller = CarouselController();
-  List<bool> _isLiked = [false, false, false]; // Track liked state for each post
-  List<bool> _isCommenting = [false, false, false];
+  final CarouselSliderController _controller = CarouselSliderController();
+  List<bool> _isLiked = [];
+  List<bool> _isCommenting = [];
+  List<Map<String, dynamic>> posts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPosts();
+  }
+
+  Future<void> _loadPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? postsString = prefs.getStringList('posts');
+    if (postsString != null) {
+      setState(() {
+        posts = postsString.map((post) => Map<String, dynamic>.from(json.decode(post))).toList();
+        // Initialize _isLiked and _isCommenting lists based on the number of posts
+        _isLiked = List<bool>.filled(posts.length, false);
+        _isCommenting = List<bool>.filled(posts.length, false);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +48,36 @@ class _HomeState extends State<Home> {
       'assets/images/4.png',
       'assets/images/8.png',
     ];
+
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final newPost = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreatePostPage(),
+            ),
+          );
+          if (newPost != null) {
+            setState(() {
+              posts.insert(0, newPost); // Add the new post to the beginning of the list
+              _isLiked.insert(0, false); // Initialize the like state for the new post
+              _isCommenting.insert(0, false); // Initialize the comment state for the new post
+            });
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setStringList('posts', posts.map((post) => json.encode(post)).toList());
+          }
+        },
+        child: Icon(Icons.add, color: Colors.white),
+        backgroundColor: Color(0xff3C6255),
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             Container(
               margin: EdgeInsets.all(20),
               child: Text(
-                "Let's make your \nworld greener.",
+                AppLocalizations.of(context)!.translate("header"),
                 style: TextStyle(
                   color: Color(0xff3C6255),
                   fontWeight: FontWeight.bold,
@@ -42,6 +88,7 @@ class _HomeState extends State<Home> {
             CarouselSlider(
               items: sliderImages.map((item) {
                 return Container(
+                  margin: EdgeInsets.symmetric(horizontal: 5),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(15.0),
                     child: Image.asset(
@@ -71,97 +118,100 @@ class _HomeState extends State<Home> {
             SizedBox(height: 20),
             DotsIndicator(
               dotsCount: sliderImages.length,
-              position: _currentIndex.toDouble().toInt(),
+              position: _currentIndex.toInt(),
               decorator: DotsDecorator(
                 color: Colors.grey,
                 activeColor: Color(0xff32B768),
               ),
             ),
             SizedBox(height: 30),
-            Row(
-              children: [
-                Container(
-                  margin: EdgeInsets.fromLTRB(10, 20, 3, 0),
-                  child: Text(
-                    "Let's discover More About Palm",
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.translate("discover"),
                     style: TextStyle(
-                        color: Color(0xff3C6255),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold),
+                      color: Color(0xff3C6255),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             SizedBox(height: 10),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  //Palm Cards
                   _buildCard(
                     context,
                     'assets/images/Siwa.png',
-                    'Siwa Oasis palm trees',
-                    'Siwa Oasis in Egypt is considered one of the main oases in the Western Desert,\n and is characterized by great importance for the environment, economy and culture of Egypt,\n Agriculture and agricultural \nproduction: Siwa Oasis is considered an important source of tropical agricultural \nproduction such as dates, various fruits and vegetables, \nthanks to the traditional irrigation system and its benefit from deep underground water.',
-                    'assets/images/profile1.png', // Added profile image for each post
-                    0, // Added index to track liked state individually
+                    AppLocalizations.of(context)!.translate("siwaName"),
+                    AppLocalizations.of(context)!.translate("siwaDiscription"),
+                    'assets/images/profile1.png',
+                    0,
                   ),
                   _buildCard(
                     context,
                     'assets/images/SaPalms.PNG',
-                    'AlUla Oasis',
-                    'AlUla\'s 2.3 million palm trees produce more than 90,000 tons of dates\nOne of the most favorite types, this type of dates is characterized by its light Turkish color,\n and it also contains many benefits for the human body, \nto be able to provide the person with what is necessary and also contributes to the treatment of some diseases such as abdominal tumors.\n',
-                    'assets/images/profile2.png', // Added profile image for each post
-                    1, // Added index to track liked state individually
+                    AppLocalizations.of(context)!.translate("alulaName"),
+                    AppLocalizations.of(context)!.translate("alulaDiscription"),
+                    'assets/images/profile2.png',
+                    1,
                   ),
                   _buildCard(
                     context,
                     'assets/images/Sapalms2.png',
-                    '    Toshka',
-                    'An official report by the Ministry of Agriculture and Land Reclamation stated that the date palm farm in Toshka, Aswan Governorate,\n is the largest palm farm planted in a single area in the world,\n which made it entered the Guinness Book of World Records.\n'
-                        'It enjoys a global reputation thanks to the quality and diversity of its products.\n Toshka Farm is located in an area with an ideal tropical climate in the depths of the desert,\n which provides ideal conditions for planting and growing dates in large quantities and high quality.',
-                    'assets/images/profile3.png', // Added profile image for each post
-                    2, // Added index to track liked state individually
+                    AppLocalizations.of(context)!.translate("toshkaName"),
+                    AppLocalizations.of(context)!.translate("toshkaDiscription"),
+                    'assets/images/profile3.png',
+                    2,
                   ),
                 ],
               ),
             ),
             SizedBox(height: 20),
-            // Text(
-            //   "Facebook Posts",
-            //   style: TextStyle(
-            //     fontSize: 20,
-            //     fontWeight: FontWeight.bold,
-            //     color: Colors.black,
-            //   ),
-            //   textAlign: TextAlign.center,
-            // ),
-            SizedBox(height: 10),
-            // Display Facebook Posts
-            Column(
-              children: [
-                _buildFacebookPost(
-                  'AbdelFattah Elsisi',
-                  'assets/images/7.png',
-                  'I faced this problem in one of my existing Palm trees \n what is this problem abd what its treatment? ',
-                  0, // Added index to track liked state individually
-                  'assets/images/person1.png', // Different profile picture
-                ),
-                _buildFacebookPost(
-                  'Mark ',
-                  null, // No image
-                  ' what are the best types of palm seedlings that can be growen in Egypt !!? ',
-                  1, // Added index to track liked state individually
-                  'assets/images/person3.png', // Different profile picture
-                ),
-                _buildFacebookPost(
-                  'Elon Musk',
-                  'assets/images/2.png',
-                  ' I think my palm tree is enfected with some disease , but idon\'t know what it is ?? ',
-                  2, // Added index to track liked state individually
-                  'assets/images/ilonMusk.png', // Different profile picture
-                ),
-              ],
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Column(
+                children: [
+                  for (int i = 0; i < posts.length; i++)
+                    _buildFacebookPost(
+                      posts[i]["userName"] ?? "مستخدم جديد",
+                      posts[i]["image"],
+                      posts[i]["text"],
+                      i,
+                      posts[i]["userImage"] ?? 'assets/images/person00.png',
+                      posts[i],
+                    ),
+                  _buildFacebookPost(
+                    'عبد الفتاح السيسي',
+                    'assets/images/7.png',
+                    AppLocalizations.of(context)!.translate("post1"),
+                    0,
+                    'assets/images/person1.png',
+                    null,
+                  ),
+                  _buildFacebookPost(
+                    'مارك',
+                    null,
+                    AppLocalizations.of(context)!.translate("post2"),
+                    1,
+                    'assets/images/person3.png',
+                    null,
+                  ),
+                  _buildFacebookPost(
+                    'إيلون ماسك',
+                    'assets/images/2.png',
+                    AppLocalizations.of(context)!.translate("post3"),
+                    2,
+                    'assets/images/ilonMusk.png',
+                    null,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -169,44 +219,76 @@ class _HomeState extends State<Home> {
     );
   }
 
-  //Cards
   Widget _buildCard(BuildContext context, String imagePath, String title,
       String detail, String profileImage, int index) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DetailPage(
-                imagePath: imagePath, title: title, detail: detail),
+            builder: (context) =>
+                DetailPage(imagePath: imagePath, title: title, detail: detail),
           ),
         );
       },
       child: Container(
         width: 300,
         margin: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.grey[800] : Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(isDarkMode ? 0.1 : 0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Hero(
-              tag: '${imagePath}_unique_tag',
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  height: 250,
-                  width: double.infinity,
-                ),
+            ClipRRect(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
+              ),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.cover,
+                height: 200,
+                width: double.infinity,
               ),
             ),
-            SizedBox(height: 10),
-            Text(
-              title,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: Color(0xff3C6255)),
+            Padding(
+              padding: EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: isDarkMode ? Colors.white : Color(0xff3C6255),
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    detail,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -214,116 +296,144 @@ class _HomeState extends State<Home> {
     );
   }
 
-  //Posts
-  Widget _buildFacebookPost(
-      String name, String? imagePath, String text, int index, String profileImage) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Card(
-        elevation: 3,
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundImage: AssetImage(
-                      profileImage,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              if (imagePath != null)
-                Image.asset(
-                  imagePath,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+  Widget _buildFacebookPost(String name, String? imagePath, String text,
+      int index, String profileImage, Map<String, dynamic>? postData) {
+    // التحقق من صحة الفهرس قبل الوصول إلى القوائم
+    if (index < 0 || index >= _isLiked.length || index >= _isCommenting.length) {
+      return SizedBox(); // تجنب الخطأ عن طريق إرجاع ويدجت فارغة إذا كان الفهرس غير صالح
+    }
+
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: profileImage.startsWith('assets/')
+                      ? AssetImage(profileImage) as ImageProvider
+                      : FileImage(File(profileImage)),
                 ),
-              SizedBox(height: 10),
-              Text(
-                text,
-                style: TextStyle(
-                  fontSize: 14,
-                ),
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      _isLiked[index] ? Icons.favorite : Icons.favorite_border,
-                      color: _isLiked[index] ? Colors.red : null,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isLiked[index] = !_isLiked[index];
-                      });
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.comment),
-                    onPressed: () {
-                      setState(() {
-                        _isCommenting[index] = !_isCommenting[index];
-                      });
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.share),
-                    onPressed: () {
-                      // Add functionality for share button
-                    },
-                  ),
-                ],
-              ),
-              if (_isCommenting[index])
-                //Write a comment
-                TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'Write a comment...',
+                SizedBox(width: 10),
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
                   ),
                 ),
-            ],
-          ),
+              ],
+            ),
+            SizedBox(height: 10),
+            if (imagePath != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: imagePath.startsWith('assets/')
+                    ? Image.asset(
+                        imagePath,
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.file(
+                        File(imagePath),
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+              ),
+            SizedBox(height: 10),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+              ),
+            ),
+            if (postData != null && (postData["location"] != null || postData["feeling"] != null || postData["taggedFriends"] != null))
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (postData["location"] != null)
+                      Text("الموقع: ${postData["location"]}", style: TextStyle(color: Colors.grey[700])),
+                    if (postData["feeling"] != null)
+                      Text("الشعور: ${postData["feeling"]}", style: TextStyle(color: Colors.grey[700])),
+                    if (postData["taggedFriends"] != null)
+                      Text("الأصدقاء المميزون: ${postData["taggedFriends"]}", style: TextStyle(color: Colors.grey[700])),
+                  ],
+                ),
+              ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    _isLiked[index] ? Icons.favorite : Icons.favorite_border,
+                    color: _isLiked[index] ? Colors.red : Color(0xff3C6255),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isLiked[index] = !_isLiked[index];
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.comment, color: Color(0xff3C6255)),
+                  onPressed: () {
+                    setState(() {
+                      _isCommenting[index] = !_isCommenting[index];
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.share, color: Color(0xff3C6255)),
+                  onPressed: () {
+                    // Add functionality for share button
+                  },
+                ),
+              ],
+            ),
+            if (_isCommenting[index])
+              TextFormField(
+                decoration: InputDecoration(
+                  hintText: 'اكتب تعليق...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 }
 
-//Details Page
 class DetailPage extends StatelessWidget {
   final String imagePath;
   final String title;
   final String detail;
 
-  const DetailPage(
-      {Key? key,
-        required this.imagePath,
-        required this.title,
-        required this.detail})
-      : super(key: key);
+  const DetailPage({
+    super.key,
+    required this.imagePath,
+    required this.title,
+    required this.detail,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        // title: Text('Detail Page'),
-      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -344,17 +454,19 @@ class DetailPage extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xff3C6255)),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xff3C6255),
+                    ),
                   ),
                   SizedBox(height: 8),
                   Text(
                     detail,
                     style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xff70B6A7F),
-                        height: 2),
+                      fontSize: 16,
+                      color: Color(0xff70b6a7f),
+                      height: 2,
+                    ),
                   ),
                 ],
               ),

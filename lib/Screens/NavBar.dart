@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:animations/animations.dart';
 import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:p_p/Screens/Home.dart';
 import 'package:p_p/Screens/Settings.dart';
 import 'package:p_p/Screens/Scan.dart';
-import 'package:p_p/Screens/history_page.dart'; // Import the history page
 
 class NavyBar extends StatefulWidget {
-  NavyBar({Key? key, required this.title}) : super(key: key);
+  const NavyBar({super.key, required this.title});
 
   final String title;
 
@@ -27,8 +25,11 @@ class _NavyBarState extends State<NavyBar> {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: backgroundColor,
         automaticallyImplyLeading: false,
         title: Center(
           child: Image.asset(
@@ -51,6 +52,7 @@ class _NavyBarState extends State<NavyBar> {
         ],
       ),
       bottomNavigationBar: BottomNavyBar(
+        backgroundColor: backgroundColor,
         selectedIndex: _currentIndex,
         onItemSelected: (index) {
           setState(() {
@@ -60,19 +62,31 @@ class _NavyBarState extends State<NavyBar> {
         },
         items: <BottomNavyBarItem>[
           BottomNavyBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(
+              Icons.home,
+              color: Color(0xff3C6255),
+            ),
             title: Text('Home'),
-            activeColor: Color(0xff3C6255),
+            activeColor: Theme.of(context).colorScheme.primary,
+            inactiveColor: Theme.of(context).colorScheme.onSurface,
           ),
           BottomNavyBarItem(
-            icon: Icon(Icons.camera),
+            icon: Icon(
+              Icons.camera,
+              color: Color(0xff3C6255),
+            ),
             title: Text('Scan'),
-            activeColor: Color(0xff3C6255),
+            activeColor: Theme.of(context).colorScheme.primary,
+            inactiveColor: Theme.of(context).colorScheme.onSurface,
           ),
           BottomNavyBarItem(
-            icon: Icon(Icons.settings),
+            icon: Icon(
+              Icons.settings,
+              color: Color(0xff3C6255),
+            ),
             title: Text('Settings'),
-            activeColor: Color(0xff3C6255),
+            activeColor: Theme.of(context).colorScheme.primary,
+            inactiveColor: Theme.of(context).colorScheme.onSurface,
           ),
         ],
       ),

@@ -82,8 +82,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                             style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
-                              ),
-                              primary: Color(0xff3C6255),
+                              ), backgroundColor: Color(0xff3C6255),
                             ),
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {

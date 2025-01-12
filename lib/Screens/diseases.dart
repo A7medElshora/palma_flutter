@@ -1,43 +1,19 @@
 import 'package:flutter/material.dart';
-
-class Disease {
-  final String name;
-  final String description;
-  final String imageUrl;
-  final String treatment;
-
-  Disease(
-      {required this.name,
-      required this.description,
-      required this.imageUrl,
-      required this.treatment});
-}
+import 'package:p_p/localization.dart'; // استيراد AppLocalizations
 
 class DiseaseListPage extends StatelessWidget {
-  final List<Disease> diseases = [
-    Disease(
-      name: 'Brown Scale ',
-
-      description:
-          'Brown spots in palm trees is a common problem that affects the health and beauty of these plants.\n The cause of the brown spots can be a bacterial or fungal infection,\n or a nutritional deficiency, or an insect attack, or unsuitable environmental conditions. \nThe cause can be identified by examining the symptoms and the cultivation history of the palms.\n Some causes can be treated by using biological or chemical pe',
-      imageUrl: 'assets/images/brownscal.jpeg',
-
-      treatment: '- If the cause of the brown spots is a bacterial or fungal infection, '
-          '\nbiological or chemical pesticides can be used to eliminate the infection.'
-          '\n- If the cause of the brown spots is a lack of nutrition, \na special palm fertilizer can be used that contains the necessary nutrients.'
-          '\nIf the brown spots are caused by an insect attack, an insecticide specifically designed for the type of insect causing the problem can be used.\n',
-    ),
-    Disease(
-      name: 'White Spots',
-      description:
-'White scale on palms is typically caused by infestations of scale insects, \nwhich appear as small, \nwhite or grayish bumps on the leaves and stems.\n These pests suck sap from the plant, weakening it over time.',
-
-      imageUrl: 'assets/images/WhiteScale.png',
-
-      treatment: 'This disease can be treated by regular inspection and treatment with horticultural oil \n or insecticidal soap\n  can help control the infestation.\n',
-    ),
-    // Add more diseases as needed
+  final List<Map<String, String>> diseases = [
+    {
+      "key": "brown", 
+      "imageUrl": "assets/images/brownscal.jpeg",
+    },
+    {
+      "key": "white", 
+      "imageUrl": "assets/images/WhiteScale.png",
+    },
   ];
+
+  DiseaseListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -45,38 +21,66 @@ class DiseaseListPage extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          ' Palm Disease ',
-          style:
-              TextStyle(color: Color(0xff3C6255), fontWeight: FontWeight.bold),
+          AppLocalizations.of(context)!.translate("info"),  
+          style: TextStyle(
+              color: Theme.of(context).appBarTheme.titleTextStyle?.color,   
+              fontWeight: FontWeight.bold,
+              fontSize: 24),
         ),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,   
+        elevation: 0,
       ),
       body: ListView.builder(
         itemCount: diseases.length,
         itemBuilder: (context, index) {
-          return Container(
-            margin: EdgeInsets.only(top: 30),
+          final diseaseKey = diseases[index]["key"]!;
+          final imageUrl = diseases[index]["imageUrl"]!;
+
+          return Card(
+            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
             child: ListTile(
-              leading: Image.asset(
-                diseases[index].imageUrl,
-                width: 50,
-                height: 50,
+              contentPadding: EdgeInsets.all(10),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(
+                  imageUrl,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                ),
               ),
-              title: Text(diseases[index].name),
-              // subtitle: Text(diseases[index].description),
+              title: Text(
+                AppLocalizations.of(context)!.translate("${diseaseKey}Name"), 
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,   
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18),
+              ),
               trailing: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF9CCCA7),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => DiseaseDetailsPage(
-                        disease: diseases[index],
+                        diseaseKey: diseaseKey,
+                        imageUrl: imageUrl,
                       ),
                     ),
                   );
                 },
                 child: Text(
-                  'View',
-                  style: TextStyle(color: Color(0xFF3C6255)),
+                  AppLocalizations.of(context)!.translate("view"),  
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
             ),
@@ -88,9 +92,10 @@ class DiseaseListPage extends StatelessWidget {
 }
 
 class DiseaseDetailsPage extends StatelessWidget {
-  final Disease disease;
+  final String diseaseKey;
+  final String imageUrl;
 
-  DiseaseDetailsPage({required this.disease});
+  const DiseaseDetailsPage({super.key, required this.diseaseKey, required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -98,78 +103,70 @@ class DiseaseDetailsPage extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Disease Details',
-          style:
-              TextStyle(color: Color(0xff3C6255), fontWeight: FontWeight.bold),
+          AppLocalizations.of(context)!.translate("diseaseDetails"),
+          style: TextStyle(
+              color: Theme.of(context).appBarTheme.titleTextStyle?.color,
+              fontWeight: FontWeight.bold,
+              fontSize: 24),
         ),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
-        child: Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                disease.imageUrl,
-                width: 300,
-                height: 300,
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(
+                    imageUrl,
+                    width: 300,
+                    height: 300,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
               SizedBox(height: 20),
-              RichText(
-                text: TextSpan(
-                  text: 'Name:  ',
-                  style: TextStyle(
-                      color: Color(0xff3C6255),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18),
-                  children: <TextSpan>[
-                    TextSpan(
-                      text: '${disease.name}',
-                      style: TextStyle(color: Colors.blueGrey),
-                    ),
-                  ],
-                ),
+              Text(
+                AppLocalizations.of(context)!.translate("Name"),
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20),
               ),
-              // Text(
-              //   'Name: ${disease.name}',
-              //   style: TextStyle(fontSize: 18,color: Color(0xff3C6255),fontWeight: FontWeight.bold),
-              // ),
-              SizedBox(height: 10),
-              Container(
-                margin: EdgeInsets.only(left: 7, bottom: 10),
-                child: RichText(
-                  text: TextSpan(
-                    text: 'Cause of Disease: \n',
-                    style: TextStyle(fontSize: 18, color: Color(0xff3C6255),height: 1.5),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: '${disease.description}',
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.blueGrey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              SizedBox(height: 5),
+              Text(
+                AppLocalizations.of(context)!.translate("${diseaseKey}Name"),
+                style: TextStyle(color: Colors.blueGrey, fontSize: 18),
               ),
-              SizedBox(
-                height: 20,
+              SizedBox(height: 20),
+              Text(
+                AppLocalizations.of(context)!.translate("causeOfDisease"),
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20),
               ),
-              Container(margin: EdgeInsets.only(left: 7),
-                child: RichText(
-                  text: TextSpan(
-                    text: 'Treatment\n ',
-                    style: TextStyle(fontSize: 18, color: Color(0xff3C6255),height: 1.5),
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: '${disease.treatment}',
-                        style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.blueGrey),
-                      ),
-                    ],
-                  ),
-                ),
+              SizedBox(height: 5),
+              Text(
+                AppLocalizations.of(context)!.translate("${diseaseKey}Desc"),
+                style: TextStyle(color: Colors.blueGrey, fontSize: 16),
+              ),
+              SizedBox(height: 20),
+              Text(
+                AppLocalizations.of(context)!.translate("treatment"),
+                style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20),
+              ),
+              SizedBox(height: 5),
+              Text(
+                AppLocalizations.of(context)!.translate("${diseaseKey}Treatment"),
+                style: TextStyle(color: Colors.blueGrey, fontSize: 16),
               ),
             ],
           ),
@@ -178,3 +175,6 @@ class DiseaseDetailsPage extends StatelessWidget {
     );
   }
 }
+
+
+
