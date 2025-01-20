@@ -88,7 +88,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     child: Transform.translate(
                       offset: _slideAnimation.value * 50, // تحريك النص من الأسفل إلى الأعلى
                       child: Text(
-                        "PALMA",
+                        "Fenti",
                         style: TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
