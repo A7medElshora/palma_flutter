@@ -60,7 +60,7 @@ class _MyAppState extends State<MyApp> {
         builder: (context, notifier, child) {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-            title: 'Palma',
+            title: 'Fentie',
             theme: notifier.getLightTheme(),
             darkTheme: notifier.getDarkTheme(),
             themeMode: notifier.themeMode,
